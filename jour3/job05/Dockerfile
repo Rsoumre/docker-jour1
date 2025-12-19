@@ -1,15 +1,15 @@
-# Image Nginx officielle
-FROM nginx:alpine
+FROM nginx:latest
 
-# Supprimer la config par défaut
-RUN rm -rf /usr/share/nginx/html/*
+COPY default.conf /etc/nginx/conf.d/default.conf
 
-# Copier les fichiers du jeu
-COPY index.html /usr/share/nginx/html/
-COPY save.php /usr/share/nginx/html/
+RUN apt-get update && apt-get install -y php-cli php-cgi
 
-# Copier les fichiers persistants dans le volume
-VOLUME /usr/share/nginx/html/data
+COPY index.html save.php results.json /usr/share/nginx/html/
 
-# Exposer le port 80
+VOLUME /usr/share/nginx/html
+
 EXPOSE 80
+
+RUN chown -R www-data:www-data /usr/share/nginx/html && chmod -R 777 /usr/share/nginx/html
+
+CMD ["sh", "-c", "php-cgi -b 127.0.0.1:9000 & nginx -g 'daemon off;'"]
